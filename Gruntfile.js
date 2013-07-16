@@ -13,9 +13,15 @@ module.exports = function (grunt) {
     dest: 'ApexLightweightConsole.user.js'
   });
 
+  grunt.config('watch.main', {
+    files: ['src/*.js'],
+    tasks: ['default']
+  });
+
   grunt.registerTask('default', ['requirejs', 'concat']);
 
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
 };
