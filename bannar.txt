@@ -1,0 +1,6 @@
+// ==UserScript==
+// @include        https://*salesforce.com/*
+// @name           ApexLightweightConsole
+// @noframes
+// ==/UserScript==
+
