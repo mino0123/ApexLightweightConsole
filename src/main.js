@@ -16,20 +16,23 @@ window.addEventListener('keydown', function windowKeyDownListener(event) {
     }
 }, false);
 
-(function () {
-    var linkElementsWrapper = document.querySelector('.linkElements');
-    if (linkElementsWrapper) {
-        var showConsole = function () {
-            try {
-                apexConsole.show();
-            } catch (e) {
-                console.log(e);
-            }
-        };
-        var apexConsoleElement = document.createElement('a');
-        apexConsoleElement.textContent = 'console';
-        apexConsoleElement.href = 'javascript: void 0;';
-        apexConsoleElement.addEventListener('click', showConsole, false);
-        linkElementsWrapper.insertBefore(apexConsoleElement, linkElementsWrapper.firstChild);
+
+function addNavLink(text, onclick) {
+    var linkElements = document.querySelector('.linkElements');
+    if (!linkElements) {
+        return;
     }
-})();
+    var link = document.createElement('a');
+    link.textContent = text;
+    link.href = 'javascript: void 0;';
+    link.addEventListener('click', onclick, false);
+    linkElements.insertBefore(link, linkElements.firstChild);
+}
+
+addNavLink('console', function () {
+    try {
+        apexConsole.show();
+    } catch (e) {
+        console.log(e);
+    }
+});
