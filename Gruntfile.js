@@ -1,16 +1,8 @@
 module.exports = function (grunt) {
 
-  grunt.config('closure-compiler.script', {
-    closurePath: './closure-compiler',
-    js: ['src/*'],
-    jsOutputFile: 'ApexLightweightConsole.user.js',
-    options: {},
-    noreport: true
-  });
-
   grunt.config('concat.script', {
     options: {banner: grunt.file.read('bannar.txt')},
-    src: ['ApexLightweightConsole.user.js'],
+    src: ['src/*'],
     dest: 'ApexLightweightConsole.user.js'
   });
 
@@ -19,9 +11,8 @@ module.exports = function (grunt) {
     tasks: ['default']
   });
 
-  grunt.registerTask('default', ['closure-compiler', 'concat']);
+  grunt.registerTask('default', ['concat']);
 
-  grunt.loadNpmTasks('grunt-closure-compiler');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');
 

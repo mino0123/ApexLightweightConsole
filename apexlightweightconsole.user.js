@@ -4,30 +4,801 @@
 // @noframes
 // ==/UserScript==
 
-function ApexConsole(){this.showed=this.initialized=!1;this.elements={};this.logView=null;this.viewElements=[];this.events=[]}ApexConsole.prototype.fire=function(a){this.events.forEach(function(b){(b=b[a])&&b()})};
-ApexConsole.prototype.initialize=function(){var a=this.elements.content=document.createElement("div"),b=this.elements.code=document.createElement("textarea"),c=this.elements.bg=document.createElement("div"),d=this.elements.execute=document.createElement("button"),e=this.loading=new LoadingImage;this.fire("oninit");a.classList.add("apex-console");b.classList.add("apex-console-code");c.classList.add("apex-console-bg");d.classList.add("apex-console-execute");d.classList.add("btn");a.appendChild(b);a.appendChild(d);
-e.insertAfter(d);var f=this;c.addEventListener("click",function(){f.hide()},!1);b.addEventListener("keydown",function(a){a.ctrlKey&&a.keyCode===a.DOM_VK_RETURN&&f.executeCode()},!1);d.textContent="execute  [Ctrl+Enter]";d.addEventListener("click",function(){try{f.executeCode()}catch(a){console.log(a)}});unsafeWindow.Ext||loadScript("/EXT/ext-3.0.0/ext-core.js");this.viewElements.push(a);this.viewElements.push(c);this.initialized=!0};ApexConsole.prototype.appendToBody=function(a){document.body.appendChild(a)};
-ApexConsole.prototype.removeFromBody=function(a){a.parentNode&&document.body.removeChild(a)};ApexConsole.prototype.show=function(){this.initialized||this.initialize();this.viewElements.forEach(this.appendToBody);var a=this.elements.code;setTimeout(function(){a.select()},0);this.showed=!0};ApexConsole.prototype.setCode=function(a){var b=this.elements.code;b.value=a;b.style.height=Math.max(b.scrollHeight,300)+"px"};
-ApexConsole.prototype.hide=function(){this.fire("onhide");this.viewElements.forEach(this.removeFromBody);this.showed=!1};ApexConsole.prototype.toggle=function(){this.showed?this.hide():this.show()};
-ApexConsole.prototype.executeCode=function(){function a(a){f.getTrace(e,b)}function b(a){d.renderResult(a);d.loading.hide()}var c=this.elements.code.value;this.fire("onexe");var d=this,e,f=new ApexCSIAPI;f.executeAnonymous(c,function(b){b.success?(b=b.traces,e=b[b.length-1].id,f.open(e,a)):(alert(b.errorText),d.loading.hide())});this.loading.show()};ApexConsole.defaultTab=GM_getValue("selected-tab");
-ApexConsole.prototype.renderResult=function(a){function b(a){for(var b=d.element.querySelectorAll("li a"),c=0,k=b.length;c<k;c++){var l=b[c];if(l.textContent===a)return l}}function c(a){var b=document.createEvent("MouseEvents");b.initEvent("click",!1,!0);a.dispatchEvent(b)}var d=this.logView;d?(d.logs=a,d.render()):(d=this.logView=new ApexLogView,d.logs=a,a=b(ApexConsole.defaultTab)||d.element.querySelector("li a"),c(a),this.elements.result=d.element,this.elements.content.appendChild(d.element))};function BufferList(a){(this.element=document.createElement("ul")).classList.add("apex-console-buffers");this.buffers={};this.console=a;this.load();this.render();this.selectedName=void 0;var b=this;a.events.push({oninit:function(){var a=b.buffers,d;for(d in a){b.select(a[d].name);break}},onexe:function(){b.save()}})}
-BufferList.prototype.newBuffer=function(a){var b=this,c={};c.name=a.name;c.code=a.code;c.onrename=a.onrename;[function(a){c.name=a;c.onrename&&c.onrename();b.render()},function(){delete b.buffers[c.name];b.render()},function(a){c.element||(c.element=a.newListItem(c.name,b.createClickListener(c)));b.element.appendChild(c.element)}].forEach(function(a){c[a.name]=a});return c};
-BufferList.prototype.load=function(){var a=GM_getValue("code"),b,c=this.buffers;try{b=JSON.parse(a)}catch(d){b={untitled:{name:"untitled",code:a||""}}}for(var e in b)a=b[e],c[a.name]=new Tab(this,a.name,a.code)};BufferList.prototype.save=function(){this.flushCode();GM_setValue("code",JSON.stringify(this.buffers))};
-BufferList.prototype.render=function(){var a=this.buffers,b=this;this.element.innerHTML="";for(var c in a)a[c].render(this);a=this.newListItem(" + ",function(){var a=b.generateNewName();b.buffers[a]=new Tab(b,a,"");b.render()});this.element.appendChild(a);this.save()};BufferList.prototype.NEW_BUFFER_NAME="code";BufferList.prototype.generateNewName=function(){for(var a=this.buffers,b=0;this.NEW_BUFFER_NAME+ ++b in a;);return this.NEW_BUFFER_NAME+b};
-BufferList.prototype.newListItem=function(a,b){var c=document.createElement("li"),d=document.createElement("a");d.textContent=a;d.href="javascript: void 0;";c.appendChild(d);c.addEventListener("click",b,!1);return c};BufferList.prototype.createClickListener=function(a){var b=this;return function(){b.select(a.name)}};BufferList.prototype.remove=function(a){delete this.buffers[a];this.render();if(!this.buffers[this.selectedName])for(var b in this.buffers){this.select(this.buffers[b].name);break}};
-BufferList.prototype.add=function(a){this.buffers[a]={name:a,code:"",element:null};this.render()};BufferList.prototype.select=function(a){var b=this.buffers,c=this.console;this.save();this.selectedName=a;for(var d in b){var e=b[d];a===d?(c.setCode(e.code),e.element.classList.add("selected")):e.element.classList.remove("selected")}};BufferList.prototype.flushCode=function(){this.selectedName&&this.buffers[this.selectedName]&&(this.buffers[this.selectedName].code=this.console.elements.code.value)};
-function Tab(a,b,c){this.list=a;this.name=b||c;this.code=c||""}Tab.prototype.editStart=function(){this.editing=!0;this.render()};Tab.prototype.editEnd=function(){var a=this.name;this.name=this.input.value;this.editing=!1;this.input=null;delete this.list.buffers[a];this.list.buffers[this.name]=this;this.list.save();this.render()};Tab.prototype.remove=function(){this.list.remove(this.name)};
-Tab.prototype.render=function(){var a=this.element,b=this;a||(a=this.element=document.createElement("li"),a.addEventListener("click",function(){b.list.select(b.name)},!1),a.addEventListener("dblclick",function(){b.editStart()},!1));a.innerHTML="";if(this.editing){var c=this.input=document.createElement("input");c.type="text";c.value=this.name;c.addEventListener("blur",function(){b.editEnd()},!1);c.addEventListener("keypress",function(a){a.keyCode===KeyboardEvent.DOM_VK_RETURN&&b.editEnd()},!1);a.appendChild(c);
-c.select()}else c=document.createElement("a"),c.textContent=this.name,c.href="javascript: void 0;",a.appendChild(c),c=document.createElement("a"),c.textContent="X",c.className="remove",c.href="javascript: void 0;",c.addEventListener("click",function(){b.remove()},!1),a.appendChild(c);a.parentNode||this.list.element.appendChild(a);return a};Tab.prototype.toJSON=function(){return{name:this.name,code:this.code}};function ApexCSIAPI(){this.url="/_ui/common/apex/debug/ApexCSIAPI"}ApexCSIAPI.createGeneralSuccessListener=function(a){return function(b){a(unsafeWindow.Util.evalAjaxServletOutput(b.responseText))}};ApexCSIAPI.generalFailureListener=function(){console.log(arguments)};ApexCSIAPI.prototype.config=function(a){unsafeWindow.Ext.Ajax.request({interval:2E4,url:this.url,params:{action:"CONFIG"},success:ApexCSIAPI.createGeneralSuccessListener(a),failure:ApexCSIAPI.generalFailureListener})};
-ApexCSIAPI.prototype.poll=function(a){var b={action:"POLL",alreadyFetched:"",fewmetLocations:JSON.stringify([]),openClasses:"",traceLevels:JSON.stringify({APEX_CODE:"FINEST",VALIDATION:"INFO",WORKFLOW:"INFO",APEX_PROFILING:"INFO",DB:"INFO",CALLOUT:"INFO",VISUALFORCE:"INFO",SYSTEM:"DEBUG"}),workspace:JSON.stringify([])};unsafeWindow.Ext.Ajax.request({interval:2E4,url:this.url,params:b,success:ApexCSIAPI.createGeneralSuccessListener(a),failure:ApexCSIAPI.generalFailureListener})};
-ApexCSIAPI.prototype.getAlreadyFetched=function(){return(this.traces||[]).map(function(a){return a.id})};
-ApexCSIAPI.prototype.executeAnonymous=function(a,b){var c={action:"EXEC",alreadyFetched:this.getAlreadyFetched(),anonymousBody:a,startDate:Date.now(),fewmetLocations:JSON.stringify([]),openEditors:"",traceLevels:JSON.stringify({APEX_CODE:"FINEST",VALIDATION:"INFO",WORKFLOW:"INFO",APEX_PROFILING:"INFO",DB:"INFO",CALLOUT:"INFO",VISUALFORCE:"INFO",SYSTEM:"DEBUG"}),workspace:JSON.stringify([])};return unsafeWindow.Ext.Ajax.request({interval:2E4,url:this.url,params:c,success:ApexCSIAPI.createGeneralSuccessListener(b),
-failure:ApexCSIAPI.generalFailureListener})};ApexCSIAPI.prototype.open=function(a,b){var c=[];c.push({id:a,name:(new Date).toISOString(),xtype:"logviewer"});c={action:"OPEN",entity:a,workspace:JSON.stringify(c)};unsafeWindow.Ext.Ajax.request({url:this.url,params:c,success:ApexCSIAPI.createGeneralSuccessListener(b),failure:ApexCSIAPI.generalFailureListener})};
-ApexCSIAPI.prototype.getTrace=function(a,b){unsafeWindow.Ext.Ajax.request({timeout:6E4,url:"/servlet/debug/apex/ApexCSIJsonServlet",params:{extent:"steps",log:a},success:function(a){return function(b){a(JSON.parse(b.responseText))}}(b),failure:ApexCSIAPI.generalFailureListener})};var css="    .apex-console {        position         : absolute;        top              : 30px;        left             : 200px;        z-index          : 2001;        background-color : white;    }    .apex-console-code {        height      : 300px;        width       : 800px;        display     : block;        resize      : both;        font-family : inconsolata;    }    .apex-console-bg {        position         : fixed;        top              : 0;        left             : 0;        opacity          : 0.5;        background-color : black;        height           : 100%;        width            : 100%;        z-index          : 2000;    }    .apex-console-execute {        margin-left      : 20px !important;    }    .apex-console-result {        width            : 100%;        padding-bottom   : 20px;    }    .apex-console-result table {        width            : 100%;        border-collapse  : collapse;    }    .apex-console-result th {        text-align    : center;        border-bottom : 1px solid #333;    }    .apex-console-result td {        border     : 1px dotted #CCC;    }    .apex-console-result-tabs {        display : inline-block;        background-color: white;        margin: 0;        padding: 0;    }    .apex-console-result-tabs li {        list-style-type : none;        float           : left;        margin          : 0.3em 0.1em;        border          : 1px gray solid;        padding         : 0px;        min-width       : 80px;    }    .apex-console-result-tabs li.selected {        background-color : #9999FF;    }    .apex-console-result-tabs li a {        text-decoration : none;        display         : block;        padding         : 0.5em;        cursor          : pointer;    }    .apex-console-result-tabs li a:hover {        background-color : #9999FF;        color            : #EFEFEF;    }    .apex-console-buffers {        position         : absolute;        top              : 40px;        left             : 1000px;        z-index          : 2001;        display          : inline-block;        font-family      : inconsolata;        font-weight      : bold;    }    .apex-console-buffers li {        list-style-type  : none;        height           : 30px;        width            : 200px;        vertical-align   : middle;        border-radius    : 0 10px 10px 0;        background-color : #EEC;        box-shadow       : 2px 2px 3px #CCC;        clear            : both;    }    .apex-console-buffers li.selected {        box-shadow : none;        background-color : #FFD;    }    .apex-console-buffers li.selected a {        border-radius    : 0 10px 10px 0;    }    .apex-console-buffers li a {        text-decoration : none;        padding         : 0.5em;        cursor          : default;        margin          : auto;        display         : inline-block;    }    .apex-console-buffers input {        margin          : auto;        display         : inline-block;        width           : 100%;        height          : 100%;    }    .apex-console-buffers .remove {        float           : right;    }";
-GM_addStyle(css);function LoadingImage(){var a=this.element=document.createElement("img");a.src="/img/loading.gif";a.style.verticalAlign="middle";a.style.display="none"}LoadingImage.prototype.insertAfter=function(a){a.parentNode.insertBefore(this.element,a.nextSibiling)};LoadingImage.prototype.show=function(){this.element.style.display="inline"};LoadingImage.prototype.hide=function(){this.element.style.display="none"};function ApexLogView(){function a(a){a.classList.remove("selected")}function b(b,d){var f=document.createElement("li"),g=document.createElement("a");g.textContent=b;g.addEventListener("click",function(){GM_setValue("selected-tab",b);e.forEach(a);f.classList.add("selected");c.applyFilter(d)},!1);f.appendChild(g);e.push(f);return f}this.logs=null;this.element=document.createElement("div");this.element.classList.add("apex-console-result");var c=this,d=this.tabs=document.createElement("ul"),e=[];d.classList.add("apex-console-result-tabs");
-for(var f in ApexLogView.filters)d.appendChild(b(f,ApexLogView.filters[f]));this.element.appendChild(d);this.table=document.createElement("table");this.element.appendChild(this.table)}function EventPair(a,b){this.start=a;this.end=b}new EventPair("EXECUTION_STARTED","EXECUTION_FINISHED");new EventPair("CODE_UNIT_STARTED","CODE_UNIT_FINISHED");new EventPair("SYSTEM_CONSTRUCTOR_ENTRY","SYSTEM_CONSTRUCTOR_EXIT");new EventPair("SYSTEM_METHOD_ENTRY","SYSTEM_METHOD_EXIT");var LogEvent={isEndEvent:function(a){}};
-function LogThreeView(a){var b=0;for(a=a.length;b<a;b++);}LogThreeView.plusImage=function(){var a=document.createElement("img");a.src="/img/alohaSkin/setup/setup_plus_lev1.gif";return a};LogThreeView.minusImage=function(){var a=document.createElement("img");a.src="/img/alohaSkin/setup/setup_minus_lev1.gif";return a};
-ApexLogView.prototype.render=function(){var a="category event file lineNumber iteration sequenceNumber frameSequenceNumber detail isExecutable method nanosSinceRequestStart".split(" "),a=["event","method","detail"],b=this.logs,c=this.table;c.innerHTML="";for(var d=c.insertRow(0),e=0,f=a.length;e<f;e++){var h=document.createElement("th");h.textContent=a[e];d.appendChild(h)}e=0;for(f=b.length;e<f;e++)if(d=b[e],this.filter(d))for(var k=c.insertRow(c.rows.length),l=k.cells,g=0,m=a.length;g<m;g++)h=k.insertCell(l.length),
-h.innerHTML=d[a[g]]};ApexLogView.filters={EXECUTABLE:function(a){return a.isExecutable},USER_DEBUG:function(a){return"USER_DEBUG"===a.event},METHOD_ENTRY:function(a){return"SYSTEM_METHOD_ENTRY"===a.event||"SYSTEM_CONSTRUCTOR_ENTRY"===a.event||ApexLogView.filters.EXCEPTION(a)},EXCEPTION:function(a){return"EXCEPTION_THROWN"===a.event||"FATAL_ERROR"===a.event},LIMIT_USAGE_FOR_NS:function(a){return"LIMIT_USAGE_FOR_NS"===a.event},ALL:function(){return!0}};
-ApexLogView.prototype.applyFilter=function(a){this.filter=a;this.render()};var window=window||unsafeWindow,apexConsole=new ApexConsole;unsafeWindow.apexConsole=apexConsole;unsafeWindow.ApexConsole=ApexConsole;var buffers=new BufferList(apexConsole);apexConsole.viewElements.push(buffers.element);apexConsole.buffers=buffers;window.addEventListener("keydown",function(a){try{a.ctrlKey&&(a.shiftKey&&a.keyCode===a.DOM_VK_X)&&apexConsole.toggle()}catch(b){console.log(b)}},!1);
-function addNavLink(a,b){var c=document.querySelector(".linkElements");if(c){var d=document.createElement("a");d.textContent=a;d.href="javascript: void 0;";d.addEventListener("click",b,!1);c.insertBefore(d,c.firstChild)}}addNavLink("console",function(){try{apexConsole.show()}catch(a){console.log(a)}});
+function ApexConsole() {
+  this.initialized  = false; // boolean
+  this.showed       = false; // boolean
+  this.elements     = {};    // Hash of Element {content,code,bg,execute,result}
+  this.logView      = null;  // ApexLogView
+  this.viewElements = [];    // Array of Element. used show/hide
+  this.events       = [];    // [{oninit, onexe, onhide}]
+}
+ApexConsole.prototype.fire = function apex_console_fire(name) {
+    this.events.forEach(callEvent);
+    function callEvent(e) {
+        var f = e[name];
+        f && f();
+    }
+};
+ApexConsole.prototype.initialize = function apex_console_initialize() {
+    var content = this.elements.content = document.createElement('div'),
+        code    = this.elements.code    = document.createElement('textarea'),
+        bg      = this.elements.bg      = document.createElement('div'),
+        execute = this.elements.execute = document.createElement('button'),
+        loading = this.loading          = new LoadingImage();
+
+    this.fire('oninit');
+
+    content.classList.add('apex-console');
+    code.classList.add('apex-console-code');
+    bg.classList.add('apex-console-bg');
+    execute.classList.add('apex-console-execute');
+    execute.classList.add('btn');
+
+    content.appendChild(code);
+    content.appendChild(execute);
+    loading.insertAfter(execute);
+
+    var that = this;
+
+    bg.addEventListener('click', function apex_console_bgclick() {
+        that.hide();
+    }, false);
+    code.addEventListener('keydown', function (event) {
+        if (event.ctrlKey && event.keyCode === event.DOM_VK_RETURN) {
+            that.executeCode();
+        }
+    }, false);
+
+    execute.textContent = 'execute  [Ctrl+Enter]';
+    execute.addEventListener('click', function apex_console_executeclick() {
+        try {
+            that.executeCode();
+        } catch (e) {
+            console.log(e);
+        }
+    });
+
+    if (! unsafeWindow.Ext) {
+        loadScript('/EXT/ext-3.0.0/ext-core.js');
+    }
+
+    this.viewElements.push(content);
+    this.viewElements.push(bg);
+
+    this.initialized = true;
+};
+ApexConsole.prototype.appendToBody = function apex_console_appendToBody(element) {
+    document.body.appendChild(element);
+};
+ApexConsole.prototype.removeFromBody = function apex_console_removeFromBody(element) {
+    if (element.parentNode) {
+        document.body.removeChild(element);
+    }
+};
+ApexConsole.prototype.show = function apex_console_show() {
+    if (! this.initialized) {
+        this.initialize();
+    }
+
+    this.viewElements.forEach(this.appendToBody);
+
+    var code = this.elements.code;
+    setTimeout(function () { // すぐにselectすると
+        code.select();       // テキストエリアの表示がおかしくなる
+    }, 0);                   //
+
+    this.showed = true;
+};
+ApexConsole.prototype.setCode = function apex_console_set_code(value) {
+    var code = this.elements.code;
+    code.value = value;
+    code.style.height = Math.max(code.scrollHeight, 300) + 'px';
+}
+ApexConsole.prototype.hide = function apex_console_hide() {
+    this.fire('onhide');
+    this.viewElements.forEach(this.removeFromBody);
+    this.showed = false;
+};
+ApexConsole.prototype.toggle = function apex_console_toggle() {
+    if (this.showed) {
+        this.hide();
+    } else {
+        this.show();
+    }
+};
+ApexConsole.prototype.executeCode = function apex_console_executecode() {
+    var code = this.elements.code.value;
+
+    this.fire('onexe');
+
+    var that = this;
+    var executeId;
+    var csi = new ApexCSIAPI();
+    csi.executeAnonymous(code, onExecuteAnonymousEnd);
+
+    this.loading.show();
+
+    function onExecuteAnonymousEnd(result) {
+        if (result.success) {
+            var traces = result.traces;
+            executeId = traces[traces.length - 1].id;
+            csi.open(executeId, onOpenEnd);
+        } else {
+            alert(result.errorText);
+            that.loading.hide();
+        }
+    }
+    function onOpenEnd(result) {
+        csi.getTrace(executeId, onGetTraceEnd);
+    }
+    function onGetTraceEnd(result) {
+        that.renderResult(result);
+        that.loading.hide();
+    }
+};
+ApexConsole.defaultTab = GM_getValue('selected-tab');// unsafeWindowからはGM_getValueを使用できないためここで読み込んでおく
+ApexConsole.prototype.renderResult = function (logs) {
+    var logView = this.logView;
+    if (! logView) {
+        logView = this.logView = new ApexLogView();
+        logView.logs = logs;
+
+        var selectedTab = ApexConsole.defaultTab
+        var defaultSelectedTab = getTabByText(selectedTab) || getFirstTab();
+        dispatchClick(defaultSelectedTab);
+
+        this.elements['result'] = logView.element;
+        this.elements.content.appendChild(logView.element);
+    } else {
+        logView.logs = logs;
+        logView.render();
+    }
+
+    function getTabByText(text) {
+        var tabs = logView.element.querySelectorAll('li a');
+        for (var i = 0, len = tabs.length; i < len; i++) {
+            var t = tabs[i];
+            if (t.textContent === text) {
+                return t;
+            }
+        }
+    }
+    function getFirstTab() {
+        return logView.element.querySelector('li a');
+    }
+    function dispatchClick(element) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent("click", false, true);
+        element.dispatchEvent(event);
+    }
+};
+function BufferList(apexConsole) {
+    var element = this.element = document.createElement('ul');
+    element.classList.add('apex-console-buffers');
+    this.buffers = {};
+    this.console = apexConsole;
+    this.load();
+    this.render();
+    this.selectedName = undefined;
+    var that = this;
+    apexConsole.events.push({
+        oninit: function oninit() {
+            var bs = that.buffers;
+            for (var i in bs) {
+                that.select(bs[i].name);
+                return;
+            }
+        },
+        onexe: function onsave() {
+            that.save();
+        }
+    });
+}
+BufferList.prototype.newBuffer = function (params) {
+    var that = this;
+    var buf = {};
+    buf.name = params.name;
+    buf.code = params.code;
+    buf.onrename = params.onrename;
+    [rename, remove, render].forEach(setMethod);
+    return buf;
+
+    function setMethod(fn) {
+        buf[fn.name] = fn;
+    }
+    function rename(name) {
+        buf.name = name;
+        buf.onrename && buf.onrename();
+        that.render();
+    }
+    function remove() {
+        delete that.buffers[buf.name];
+        that.render();
+    }
+    function render(target) {
+        var element = buf.element;
+        if (! element) {
+            buf.element = target.newListItem(buf.name, that.createClickListener(buf));
+        }
+        that.element.appendChild(buf.element);
+    }
+};
+BufferList.prototype.load = function () {
+    var code = GM_getValue('code'),
+        data,
+        buffers = this.buffers;
+
+    try {
+        data = JSON.parse(code);
+    } catch(e){
+        data = {untitled:{name:'untitled', code:code || ''}};
+    }
+
+    for (var i in data) {
+        var buf = data[i];
+        //buffers[buf.name] = this.newBuffer(buf);
+        buffers[buf.name] = new Tab(this, buf.name, buf.code);
+    }
+};
+BufferList.prototype.save = function () {
+    this.flushCode();
+    GM_setValue('code', JSON.stringify(this.buffers));
+};
+BufferList.prototype.render = function () {
+    var element = this.element,
+        buffers = this.buffers,
+        that = this;
+
+    element.innerHTML = '';
+    for (var i in buffers) {
+        buffers[i].render(this);
+    }
+
+    var add = this.newListItem(' + ', function addBuffer() {
+        var newName = that.generateNewName();//,
+            //newBuf = that.newBuffer({name: newName, code: ''});
+
+        that.buffers[newName] = new Tab(that, newName, '');
+        that.render();
+    });
+    this.element.appendChild(add);
+
+    this.save();
+};
+BufferList.prototype.NEW_BUFFER_NAME = 'code';
+BufferList.prototype.generateNewName = function () {
+    var buffers = this.buffers;
+    var count = 0;
+    while (this.NEW_BUFFER_NAME + (++count) in buffers) {}
+    return this.NEW_BUFFER_NAME + count;
+}
+BufferList.prototype.newListItem = function (text, onclick) {
+    var element = document.createElement('li');
+    var a = document.createElement('a');
+    a.textContent = text;
+    a.href = 'javascript: void 0;';
+    element.appendChild(a);
+    element.addEventListener('click', onclick, false);
+    return element;
+}
+BufferList.prototype.createClickListener = function (buf) {
+    var that = this;
+    return function () {
+        that.select(buf.name);
+    };
+};
+BufferList.prototype.remove = function (name) {
+    delete this.buffers[name];
+    this.render();
+    if (! this.buffers[this.selectedName]) {
+        for (var i in this.buffers) {
+            this.select(this.buffers[i].name);
+            return;
+        }
+    }
+};
+BufferList.prototype.add = function (name) {
+    this.buffers[name] = {name:name, code:'', element:null};
+    this.render();
+};
+BufferList.prototype.select = function (name) {
+    var buffers = this.buffers,
+        acon = this.console;
+
+    this.save();
+    this.selectedName = name;
+    for (var i in buffers) {
+        var buf = buffers[i];
+        if (name === i) {
+            acon.setCode(buf.code);
+            buf.element.classList.add('selected');
+        } else {
+            buf.element.classList.remove('selected');
+        }
+    }
+};
+BufferList.prototype.flushCode = function () {
+    if (this.selectedName && this.buffers[this.selectedName]) {
+        this.buffers[this.selectedName].code = this.console.elements.code.value;
+    }
+}
+function Tab(list, name, code) {
+    this.list = list;
+    this.name = name || code;
+    this.code = code || '';
+}
+Tab.prototype.editStart = function() {
+    this.editing = true;
+    this.render();
+};
+Tab.prototype.editEnd = function() {
+    var oldName = this.name;
+    this.name = this.input.value;
+    this.editing = false;
+    this.input = null;
+    delete this.list.buffers[oldName];
+    this.list.buffers[this.name] = this;
+    this.list.save();
+    this.render();
+};
+Tab.prototype.remove = function() {
+    this.list.remove(this.name);
+};
+Tab.prototype.render = function() {
+    var element = this.element,
+        that = this;
+    if (! element) {
+        element = this.element = document.createElement('li');
+        element.addEventListener('click', function() {
+            that.list.select(that.name);
+        }, false);
+        element.addEventListener('dblclick', function() {
+            that.editStart();
+        }, false);
+    }
+    element.innerHTML = '';
+    if (! this.editing) {
+        var a = document.createElement('a');
+        a.textContent = this.name;
+        a.href = 'javascript: void 0;';
+        element.appendChild(a);
+        var x = document.createElement('a');
+        x.textContent = 'X';
+        x.className = 'remove';
+        x.href = 'javascript: void 0;';
+        x.addEventListener('click', function() {
+            that.remove();
+        }, false);
+        element.appendChild(x);
+    } else {
+        var input = this.input = document.createElement('input');
+        input.type = 'text';
+        input.value = this.name;
+        input.addEventListener('blur', function() {
+            that.editEnd();
+        }, false);
+        input.addEventListener('keypress', function(event) {
+            if (event.keyCode === KeyboardEvent.DOM_VK_RETURN) {
+                that.editEnd();
+            }
+        }, false);
+        element.appendChild(input);
+        input.select();
+    }
+    if (! element.parentNode) {
+        this.list.element.appendChild(element);
+    }
+    return element;
+};
+Tab.prototype.toJSON = function() {
+    return {name: this.name, code: this.code};
+};
+
+function ApexCSIAPI() {
+    this.url = '/_ui/common/apex/debug/ApexCSIAPI';
+}
+ApexCSIAPI.createGeneralSuccessListener = function (callback) {
+    return function (result) {
+        callback(unsafeWindow.Util.evalAjaxServletOutput(result.responseText));
+    }
+};
+ApexCSIAPI.generalFailureListener = function () {
+    console.log(arguments);
+};
+ApexCSIAPI.prototype.config = function (callback) {
+    unsafeWindow.Ext.Ajax.request({
+        interval : 2E4,
+        url      : this.url,
+        params   : {action : 'CONFIG'},
+        success  : ApexCSIAPI.createGeneralSuccessListener(callback),
+        failure : ApexCSIAPI.generalFailureListener
+    });
+};
+ApexCSIAPI.prototype.poll = function (callback) {
+    var params = {
+        action          : 'POLL',
+        alreadyFetched  : '',
+        fewmetLocations : JSON.stringify([]),
+        openClasses     : '',
+        traceLevels     : JSON.stringify({"APEX_CODE":"FINEST","VALIDATION":"INFO","WORKFLOW":"INFO","APEX_PROFILING":"INFO","DB":"INFO","CALLOUT":"INFO","VISUALFORCE":"INFO","SYSTEM":"DEBUG"}),
+        workspace       : JSON.stringify([])
+    };
+    unsafeWindow.Ext.Ajax.request({
+        interval : 2E4,
+        url      : this.url,
+        params   : params,
+        success  : ApexCSIAPI.createGeneralSuccessListener(callback),
+        failure : ApexCSIAPI.generalFailureListener
+    });
+};
+ApexCSIAPI.prototype.getAlreadyFetched = function () {
+    return (this.traces || []).map(function (trace) {
+        return trace.id;
+    });
+};
+ApexCSIAPI.prototype.executeAnonymous = function (anonymousBody, callback) {
+    var params = {
+        action          : 'EXEC',
+        alreadyFetched  : this.getAlreadyFetched(),
+        anonymousBody   : anonymousBody,
+        startDate       : Date.now(),
+        fewmetLocations : JSON.stringify([]),
+        openEditors     : '',
+        traceLevels     : JSON.stringify({"APEX_CODE":"FINEST","VALIDATION":"INFO","WORKFLOW":"INFO","APEX_PROFILING":"INFO","DB":"INFO","CALLOUT":"INFO","VISUALFORCE":"INFO","SYSTEM":"DEBUG"}),
+        workspace       : JSON.stringify([])
+    };
+    return unsafeWindow.Ext.Ajax.request({
+        interval : 2E4,
+        url      : this.url,
+        params   : params,
+        success  : ApexCSIAPI.createGeneralSuccessListener(callback),
+        failure  : ApexCSIAPI.generalFailureListener
+    });
+};
+ApexCSIAPI.prototype.open = function (entity, callback) {
+    var workspace = [];
+    workspace.push({
+        id    : entity,
+        name  : (new Date()).toISOString(),
+        xtype : "logviewer"
+    });
+    var params = {
+        action    : 'OPEN',
+        entity    : entity,
+        workspace : JSON.stringify(workspace)
+    };
+    unsafeWindow.Ext.Ajax.request({
+        url     : this.url,
+        params  : params,
+        success : ApexCSIAPI.createGeneralSuccessListener(callback),
+        failure : ApexCSIAPI.generalFailureListener
+    });
+};
+ApexCSIAPI.prototype.getTrace = function (traceId, callback) {
+    var params = {
+        extent : 'steps',
+        log    : traceId
+    };
+    unsafeWindow.Ext.Ajax.request({
+        timeout : 60000,
+        url     : '/servlet/debug/apex/ApexCSIJsonServlet',
+        params  : params,
+        success : createJsonSuccessListener(callback),
+        failure : ApexCSIAPI.generalFailureListener
+    });
+    function createJsonSuccessListener(callback) {
+        return function (result) {
+            callback(JSON.parse(result.responseText));
+        }
+    }
+};
+
+var css = '' +
+'    .apex-console {' +
+'        position         : absolute;' +
+'        top              : 30px;' +
+'        left             : 200px;' +
+'        z-index          : 2001;' +
+'        background-color : white;' +
+'    }' +
+'    .apex-console-code {' +
+'        height      : 300px;' +
+'        width       : 800px;' +
+'        display     : block;' +
+'        resize      : both;' +
+'        font-family : inconsolata;' +
+'    }' +
+'    .apex-console-bg {' +
+'        position         : fixed;' +
+'        top              : 0;' +
+'        left             : 0;' +
+'        opacity          : 0.5;' +
+'        background-color : black;' +
+'        height           : 100%;' +
+'        width            : 100%;' +
+'        z-index          : 2000;' +
+'    }' +
+'    .apex-console-execute {' +
+'        margin-left      : 20px !important;' +
+'    }' +
+'    .apex-console-result {' +
+'        width            : 100%;' +
+'        padding-bottom   : 20px;' +
+'    }' +
+'    .apex-console-result table {' +
+'        width            : 100%;' +
+'        border-collapse  : collapse;' +
+'    }' +
+'    .apex-console-result th {' +
+'        text-align    : center;' +
+'        border-bottom : 1px solid #333;' +
+'    }' +
+'    .apex-console-result td {' +
+'        border     : 1px dotted #CCC;' +
+'    }' +
+'    .apex-console-result-tabs {' +
+'        display : inline-block;' +
+'        background-color: white;' +
+'        margin: 0;' +
+'        padding: 0;' +
+'    }' +
+'    .apex-console-result-tabs li {' +
+'        list-style-type : none;' +
+'        float           : left;' +
+'        margin          : 0.3em 0.1em;' +
+'        border          : 1px gray solid;' +
+'        padding         : 0px;' +
+'        min-width       : 80px;' +
+'    }' +
+'    .apex-console-result-tabs li.selected {' +
+'        background-color : #9999FF;' +
+'    }' +
+'    .apex-console-result-tabs li a {' +
+'        text-decoration : none;' +
+'        display         : block;' +
+'        padding         : 0.5em;' +
+'        cursor          : pointer;' +
+'    }' +
+'    .apex-console-result-tabs li a:hover {' +
+'        background-color : #9999FF;' +
+'        color            : #EFEFEF;' +
+'    }' +
+    '' +
+'    .apex-console-buffers {' +
+'        position         : absolute;' +
+'        top              : 40px;' +
+'        left             : 1000px;' +
+'        z-index          : 2001;' +
+'        display          : inline-block;' +
+'        font-family      : inconsolata;' +
+'        font-weight      : bold;' +
+'    }' +
+'    .apex-console-buffers li {' +
+'        list-style-type  : none;' +
+'        height           : 30px;' +
+'        width            : 200px;' +
+'        vertical-align   : middle;' +
+'        border-radius    : 0 10px 10px 0;' +
+'        background-color : #EEC;' +
+'        box-shadow       : 2px 2px 3px #CCC;' +
+'        clear            : both;' +
+'    }' +
+'    .apex-console-buffers li.selected {' +
+'        box-shadow : none;' +
+'        background-color : #FFD;' +
+'    }' +
+'    .apex-console-buffers li.selected a {' +
+'        border-radius    : 0 10px 10px 0;' +
+'    }' +
+'    .apex-console-buffers li a {' +
+'        text-decoration : none;' +
+'        padding         : 0.5em;' +
+'        cursor          : default;' +
+'        margin          : auto;' +
+'        display         : inline-block;' +
+'    }' +
+'    .apex-console-buffers input {' +
+'        margin          : auto;' +
+'        display         : inline-block;' +
+'        width           : 100%;' +
+'        height          : 100%;' +
+'    }' +
+'    .apex-console-buffers .remove {' +
+'        float           : right;' +
+'    }';
+GM_addStyle(css);
+function LoadingImage() {
+  var element = this.element  = document.createElement('img');
+  element.src                 = '/img/loading.gif';
+  element.style.verticalAlign = 'middle';
+  element.style.display       = 'none';
+}
+LoadingImage.prototype.insertAfter = function (target) {
+    var parent = target.parentNode;
+    parent.insertBefore(this.element, target.nextSibiling);
+};
+LoadingImage.prototype.show = function () {
+    this.element.style.display = 'inline';
+};
+LoadingImage.prototype.hide = function () {
+    this.element.style.display = 'none';
+};
+
+function ApexLogView() {
+    this.logs = null;
+
+    this.element = document.createElement('div');
+    this.element.classList.add('apex-console-result');
+
+    var that = this;
+    var tabs = this.tabs = document.createElement('ul');
+    var tabElements = [];
+    tabs.classList.add('apex-console-result-tabs');
+    for (var i in ApexLogView.filters) {
+        tabs.appendChild(createFilterTab(i, ApexLogView.filters[i]));
+    }
+    this.element.appendChild(tabs);
+
+    this.table = document.createElement('table');
+    this.element.appendChild(this.table);
+
+    function removeSelected(e) {
+        e.classList.remove('selected');
+    }
+    function createFilterTab(label, filter) {
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.textContent = label;
+        a.addEventListener('click', function () {
+            GM_setValue('selected-tab', label);
+            tabElements.forEach(removeSelected);
+            li.classList.add('selected');
+            that.applyFilter(filter);
+        }, false);
+        li.appendChild(a);
+        tabElements.push(li);
+        return li;
+    }
+    function createTreeViewTab() {
+        var li = document.createElement('li');
+        var a = document.createElement('a');
+        a.textContent = label;
+        a.addEventListener('click', function () {
+            GM_setValue('selected-tab', label);
+            tabElements.forEach(removeSelected);
+            li.classList.add('selected');
+
+
+
+        }, false);
+        li.appendChild(a);
+        tabElements.push(li);
+        return li;
+    }
+}
+
+function EventPair(start, end) {
+    this.start = start;
+    this.end   = end;
+}
+
+new EventPair('EXECUTION_STARTED', 'EXECUTION_FINISHED');
+new EventPair('CODE_UNIT_STARTED', 'CODE_UNIT_FINISHED');
+new EventPair('SYSTEM_CONSTRUCTOR_ENTRY', 'SYSTEM_CONSTRUCTOR_EXIT');
+new EventPair('SYSTEM_METHOD_ENTRY', 'SYSTEM_METHOD_EXIT');
+
+var LogEvent = {
+    isEndEvent : function (event) {
+        return
+    }
+};
+function LogThreeView(logs) {
+    var stack = [];
+
+    for (var i = 0, len = logs.length; i < len; i++) {
+
+
+
+    }
+
+}
+LogThreeView.plusImage = function () {
+    var img = document.createElement('img');
+    img.src = '/img/alohaSkin/setup/setup_plus_lev1.gif';
+    return img;
+};
+LogThreeView.minusImage = function () {
+    var img = document.createElement('img');
+    img.src = '/img/alohaSkin/setup/setup_minus_lev1.gif';
+    return img;
+};
+
+ApexLogView.prototype.render = function() {
+    var params = 'category|event|file|lineNumber|iteration|sequenceNumber|frameSequenceNumber|detail|isExecutable|method|nanosSinceRequestStart'.split('|');
+    params = 'event|method|detail'.split('|');
+    var logs = this.logs,
+        table = this.table;
+    table.innerHTML = '';
+
+    var headerRow = table.insertRow(0);
+    for (var i = 0, len = params.length; i < len; i++) {
+        var cell = document.createElement('th');
+        cell.textContent = params[i];
+        headerRow.appendChild(cell);
+    }
+    for (var i = 0, len = logs.length; i < len; i++) {
+        var log = logs[i];
+        if (! this.filter(log)) {
+            continue;
+        }
+        var row = table.insertRow(table.rows.length);
+        var cells = row.cells;
+        for (var j = 0, paramLen = params.length; j < paramLen; j++) {
+            var cell = row.insertCell(cells.length);
+            cell.innerHTML = log[params[j]];
+        }
+    }
+};
+ApexLogView.filters = {
+    EXECUTABLE : function (log) {
+        return log.isExecutable;
+    },
+    USER_DEBUG : function (log) {
+        return log.event === 'USER_DEBUG';
+    },
+    METHOD_ENTRY : function (log) {
+        return log.event === 'SYSTEM_METHOD_ENTRY' ||
+               log.event === 'SYSTEM_CONSTRUCTOR_ENTRY' ||
+               ApexLogView.filters.EXCEPTION(log);
+    },
+    EXCEPTION : function (log) {
+        return log.event === 'EXCEPTION_THROWN' || log.event === 'FATAL_ERROR';
+    },
+    LIMIT_USAGE_FOR_NS : function (log) {
+        return log.event === 'LIMIT_USAGE_FOR_NS';
+    },
+    ALL : function () {return true;}
+};
+ApexLogView.prototype.applyFilter = function(filter) {
+    this.filter = filter;
+    this.render();
+};
+
+var window = window || unsafeWindow;
+var apexConsole = new ApexConsole();
+unsafeWindow.apexConsole = apexConsole;
+unsafeWindow.ApexConsole = ApexConsole;
+var buffers = new BufferList(apexConsole);
+apexConsole.viewElements.push(buffers.element);
+apexConsole.buffers = buffers;
+
+window.addEventListener('keydown', function windowKeyDownListener(event) {
+    try {
+        if (event.ctrlKey && event.shiftKey && event.keyCode === event.DOM_VK_X) {
+            apexConsole.toggle();
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}, false);
+
+
+function addNavLink(text, onclick) {
+    var linkElements = document.querySelector('.linkElements');
+    if (!linkElements) {
+        return;
+    }
+    var link = document.createElement('a');
+    link.textContent = text;
+    link.href = 'javascript: void 0;';
+    link.addEventListener('click', onclick, false);
+    linkElements.insertBefore(link, linkElements.firstChild);
+}
+
+addNavLink('console', function () {
+    try {
+        apexConsole.show();
+    } catch (e) {
+        console.log(e);
+    }
+});
