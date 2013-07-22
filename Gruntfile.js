@@ -10,7 +10,7 @@ module.exports = function (grunt) {
 
   grunt.config('concat.script', {
     options: {banner: grunt.file.read('bannar.txt')},
-    src: ['node_modules/requirejs/require.js', 'ApexLightweightConsole.user.js'],
+    src: ['ApexLightweightConsole.user.js'],
     dest: 'ApexLightweightConsole.user.js'
   });
 
