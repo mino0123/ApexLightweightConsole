@@ -86,6 +86,7 @@ var css = '' +
 '        border-radius    : 0 10px 10px 0;' +
 '        background-color : #EEC;' +
 '        box-shadow       : 2px 2px 3px #CCC;' +
+'        clear            : both;' +
 '    }' +
 '    .apex-console-buffers li.selected {' +
 '        box-shadow : none;' +
