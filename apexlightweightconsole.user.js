@@ -607,6 +607,11 @@ var css = '' +
 '        float           : right;' +
 '    }';
 GM_addStyle(css);
+function loadScript(src) {
+  var script = document.createElement('script');
+  script.src = src;
+  document.head.appendChild(script);
+}
 function LoadingImage() {
   var element = this.element  = document.createElement('img');
   element.src                 = '/img/loading.gif';
