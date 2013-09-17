@@ -789,15 +789,18 @@ window.addEventListener('keydown', function windowKeyDownListener(event) {
 
 
 function addNavLink(text, onclick) {
-    var linkElements = document.querySelector('.linkElements');
-    if (!linkElements) {
+    var parent;
+    parent = document.querySelector('.linkElements') ||
+            document.querySelector('#toolbar');
+    if (!parent) {
         return;
     }
     var link = document.createElement('a');
+    link.style.color = '#FFFFFF';
     link.textContent = text;
     link.href = 'javascript: void 0;';
     link.addEventListener('click', onclick, false);
-    linkElements.insertBefore(link, linkElements.firstChild);
+    parent.insertBefore(link, parent.firstChild);
 }
 
 addNavLink('console', function () {
