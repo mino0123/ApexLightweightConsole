@@ -114,22 +114,31 @@ ApexConsole.prototype.executeCode = function apex_console_executecode() {
     var that = this;
     var executeId;
     var csi = new ApexCSIAPI();
-    csi.executeAnonymous(code, onExecuteAnonymousEnd);
+    Tooling.executeAnonymous(code, onExecuteAnonymousEnd);
 
     this.loading.show();
 
     function onExecuteAnonymousEnd(result) {
-        if (result.success) {
-            var traces = result.traces;
-            executeId = traces[traces.length - 1].id;
-            csi.open(executeId, onOpenEnd);
-        } else {
-            alert(result.errorText);
-            that.loading.hide();
-        }
+        console.log(result);
+        csi.poll(function () {
+            if (result.success) {
+                var query = 'SELECT Id, Application, Status, Operation, StartTime, LogLength, LogUserId, LogUser.Name FROM ApexLog';
+                Tooling.query(query, function (qr) {
+                    console.log(qr);
+                    executeId = qr.records[0].Id;
+                    csi.open(qr.records[0].Id, onOpenEnd);
+                }, Date.now() - 1000);
+            } else {
+                alert(result.errorText);
+                that.loading.hide();
+            }
+            
+        });
     }
     function onOpenEnd(result) {
-        csi.getTrace(executeId, onGetTraceEnd);
+        console.log(executeId, result);
+        // csi.getTrace(executeId, onGetTraceEnd);
+        Tooling.getTrace(executeId, onGetTraceEnd);
     }
     function onGetTraceEnd(result) {
         that.renderResult(result);
@@ -418,10 +427,11 @@ ApexCSIAPI.prototype.poll = function (callback) {
     var params = {
         action          : 'POLL',
         alreadyFetched  : '',
-        fewmetLocations : JSON.stringify([]),
-        openClasses     : '',
-        traceLevels     : JSON.stringify({"APEX_CODE":"FINEST","VALIDATION":"INFO","WORKFLOW":"INFO","APEX_PROFILING":"INFO","DB":"INFO","CALLOUT":"INFO","VISUALFORCE":"INFO","SYSTEM":"DEBUG"}),
-        workspace       : JSON.stringify([])
+        // fewmetLocations : JSON.stringify([]),
+        // openClasses     : '',
+        // traceLevels     : JSON.stringify({"APEX_CODE":"FINEST","VALIDATION":"INFO","WORKFLOW":"INFO","APEX_PROFILING":"INFO","DB":"INFO","CALLOUT":"INFO","VISUALFORCE":"INFO","SYSTEM":"DEBUG"}),
+        // workspace       : JSON.stringify([]),
+        openObjects     : JSON.stringify([])
     };
     unsafeWindow.Ext.Ajax.request({
         interval : 2E4,
@@ -465,11 +475,14 @@ ApexCSIAPI.prototype.open = function (entity, callback) {
     var params = {
         action    : 'OPEN',
         entity    : entity,
-        workspace : JSON.stringify(workspace)
+        // workspace : JSON.stringify(workspace)
     };
     unsafeWindow.Ext.Ajax.request({
         url     : this.url,
         params  : params,
+        headers : {
+            Accept: 'application/json'
+        },
         success : ApexCSIAPI.createGeneralSuccessListener(callback),
         failure : ApexCSIAPI.generalFailureListener
     });
@@ -482,6 +495,14 @@ ApexCSIAPI.prototype.getTrace = function (traceId, callback) {
     unsafeWindow.Ext.Ajax.request({
         timeout : 60000,
         url     : '/servlet/debug/apex/ApexCSIJsonServlet',
+        headers : {
+            Accept: 'application/json',
+            Authorization: 'OAuth ' + unsafeWindow.ApiUtils.getSessionId(),
+            'Content-Type': 'application/json',
+            Pragma: 'no-cache',
+            'Accept-Encoding': 'gzip,deflate,sdch',
+            'Origin': 'https://na7.salesforce.com'
+        },
         params  : params,
         success : createJsonSuccessListener(callback),
         failure : ApexCSIAPI.generalFailureListener
@@ -769,10 +790,68 @@ ApexLogView.prototype.applyFilter = function(filter) {
     this.render();
 };
 
+var Tooling = {};
+Tooling.baseUrl = '/services/data/v29.0/tooling/';
+Tooling.send = function (method, url, params, callback) {
+    var req = new XMLHttpRequest();
+    req.open(method, this.baseUrl + url);
+    req.onload = function (event) {
+        var req = event.target;
+        var res = req.responseText;
+        callback(JSON.parse(res), event);
+    };
+    req.setRequestHeader('Accept', 'application/json');
+    req.setRequestHeader('Authorization', 'OAuth ' + unsafeWindow.ApiUtils.getSessionId());
+    req.setRequestHeader('Content-Type', 'application/json');
+    req.setRequestHeader('Referer', 'https://na7.salesforce.com/_ui/common/apex/debug/ApexCSIPage');
+    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    req.send(params);
+};
+Tooling.urlParameters = function (hash) {
+    return Object.keys(hash).reduce(function (s, key) {
+        s += !s ? '' : '&';
+        return s + encodeURIComponent(key) + '=' + encodeURIComponent(hash[key]);
+    }, '');
+};
+Tooling.get = function (url, params, callback) {
+    params = params || {};
+    this.send('GET', url + '?' + this.urlParameters(params), null, callback);
+};
+Tooling.post = function (url, params, callback) {
+    params = params || {};
+    this.send('POST', url, this.urlParameters(params), callback);
+};
+Tooling.executeAnonymous = function (anonymousBody, callback) {
+    this.get('executeAnonymous/', {
+        anonymousBody: anonymousBody,
+        aciton: 'EXEC',
+        startDate: Date.now(),
+        openObjects: ''
+    }, callback);
+};
+Tooling.query = function (q, callback, _dc) {
+    this.get('query/', {q: q, _dc: _dc}, callback);
+};
+
+// Tooling外のAPI。ほかに置き場所がない&リクエスト内容がToolingに類似するためここに置く。
+Tooling.getTrace = function (logId, callback) {
+    var url = '/servlet/debug/apex/ApexCSIJsonServlet';
+    var params = {
+        extent : 'steps',
+        log: logId
+    };
+    var _baseUrl = this.baseUrl;
+    this.baseUrl = '';
+    this.get(url, params, callback);
+    this.baseUrl = _baseUrl;
+};
 var window = window || unsafeWindow;
 var apexConsole = new ApexConsole();
 unsafeWindow.apexConsole = apexConsole;
 unsafeWindow.ApexConsole = ApexConsole;
+unsafeWindow.Tooling = Tooling;
+unsafeWindow.ApexCSIAPI = ApexCSIAPI;
+unsafeWindow.csi = new ApexCSIAPI();
 var buffers = new BufferList(apexConsole);
 apexConsole.viewElements.push(buffers.element);
 apexConsole.buffers = buffers;

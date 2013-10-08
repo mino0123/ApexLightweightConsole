@@ -108,22 +108,31 @@ ApexConsole.prototype.executeCode = function apex_console_executecode() {
     var that = this;
     var executeId;
     var csi = new ApexCSIAPI();
-    csi.executeAnonymous(code, onExecuteAnonymousEnd);
+    Tooling.executeAnonymous(code, onExecuteAnonymousEnd);
 
     this.loading.show();
 
     function onExecuteAnonymousEnd(result) {
-        if (result.success) {
-            var traces = result.traces;
-            executeId = traces[traces.length - 1].id;
-            csi.open(executeId, onOpenEnd);
-        } else {
-            alert(result.errorText);
-            that.loading.hide();
-        }
+        console.log(result);
+        csi.poll(function () {
+            if (result.success) {
+                var query = 'SELECT Id, Application, Status, Operation, StartTime, LogLength, LogUserId, LogUser.Name FROM ApexLog';
+                Tooling.query(query, function (qr) {
+                    console.log(qr);
+                    executeId = qr.records[0].Id;
+                    csi.open(qr.records[0].Id, onOpenEnd);
+                }, Date.now() - 1000);
+            } else {
+                alert(result.errorText);
+                that.loading.hide();
+            }
+            
+        });
     }
     function onOpenEnd(result) {
-        csi.getTrace(executeId, onGetTraceEnd);
+        console.log(executeId, result);
+        // csi.getTrace(executeId, onGetTraceEnd);
+        Tooling.getTrace(executeId, onGetTraceEnd);
     }
     function onGetTraceEnd(result) {
         that.renderResult(result);
