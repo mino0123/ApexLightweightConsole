@@ -78,21 +78,3 @@ ApexCSIAPI.prototype.open = function (entity, callback) {
         failure : ApexCSIAPI.generalFailureListener
     });
 };
-ApexCSIAPI.prototype.getTrace = function (traceId, callback) {
-    var params = {
-        extent : 'steps',
-        log    : traceId
-    };
-    unsafeWindow.Ext.Ajax.request({
-        timeout : 60000,
-        url     : '/servlet/debug/apex/ApexCSIJsonServlet',
-        params  : params,
-        success : createJsonSuccessListener(callback),
-        failure : ApexCSIAPI.generalFailureListener
-    });
-    function createJsonSuccessListener(callback) {
-        return function (result) {
-            callback(JSON.parse(result.responseText));
-        }
-    }
-};
