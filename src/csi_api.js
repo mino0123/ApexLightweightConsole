@@ -22,10 +22,7 @@ ApexCSIAPI.prototype.poll = function (callback) {
     var params = {
         action          : 'POLL',
         alreadyFetched  : '',
-        fewmetLocations : JSON.stringify([]),
-        openClasses     : '',
-        traceLevels     : JSON.stringify({"APEX_CODE":"FINEST","VALIDATION":"INFO","WORKFLOW":"INFO","APEX_PROFILING":"INFO","DB":"INFO","CALLOUT":"INFO","VISUALFORCE":"INFO","SYSTEM":"DEBUG"}),
-        workspace       : JSON.stringify([])
+        openObjects     : JSON.stringify([])
     };
     unsafeWindow.Ext.Ajax.request({
         interval : 2E4,
