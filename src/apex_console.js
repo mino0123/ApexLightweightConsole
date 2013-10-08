@@ -113,25 +113,20 @@ ApexConsole.prototype.executeCode = function apex_console_executecode() {
     this.loading.show();
 
     function onExecuteAnonymousEnd(result) {
-        console.log(result);
         csi.poll(function () {
             if (result.success) {
-                var query = 'SELECT Id, Application, Status, Operation, StartTime, LogLength, LogUserId, LogUser.Name FROM ApexLog';
+                var query = 'SELECT Id, Application, Status, Operation, StartTime, LogLength, LogUserId, LogUser.Name FROM ApexLog ORDER BY StartTime DESC LIMIT 1';
                 Tooling.query(query, function (qr) {
-                    console.log(qr);
                     executeId = qr.records[0].Id;
-                    csi.open(qr.records[0].Id, onOpenEnd);
-                }, Date.now() - 1000);
+                    csi.open(executeId, onOpenEnd);
+                });
             } else {
                 alert(result.errorText);
                 that.loading.hide();
             }
-            
         });
     }
     function onOpenEnd(result) {
-        console.log(executeId, result);
-        // csi.getTrace(executeId, onGetTraceEnd);
         Tooling.getTrace(executeId, onGetTraceEnd);
     }
     function onGetTraceEnd(result) {

@@ -119,25 +119,20 @@ ApexConsole.prototype.executeCode = function apex_console_executecode() {
     this.loading.show();
 
     function onExecuteAnonymousEnd(result) {
-        console.log(result);
         csi.poll(function () {
             if (result.success) {
-                var query = 'SELECT Id, Application, Status, Operation, StartTime, LogLength, LogUserId, LogUser.Name FROM ApexLog';
+                var query = 'SELECT Id, Application, Status, Operation, StartTime, LogLength, LogUserId, LogUser.Name FROM ApexLog ORDER BY StartTime DESC LIMIT 1';
                 Tooling.query(query, function (qr) {
-                    console.log(qr);
                     executeId = qr.records[0].Id;
-                    csi.open(qr.records[0].Id, onOpenEnd);
-                }, Date.now() - 1000);
+                    csi.open(executeId, onOpenEnd);
+                });
             } else {
                 alert(result.errorText);
                 that.loading.hide();
             }
-            
         });
     }
     function onOpenEnd(result) {
-        console.log(executeId, result);
-        // csi.getTrace(executeId, onGetTraceEnd);
         Tooling.getTrace(executeId, onGetTraceEnd);
     }
     function onGetTraceEnd(result) {
@@ -427,11 +422,10 @@ ApexCSIAPI.prototype.poll = function (callback) {
     var params = {
         action          : 'POLL',
         alreadyFetched  : '',
-        // fewmetLocations : JSON.stringify([]),
-        // openClasses     : '',
-        // traceLevels     : JSON.stringify({"APEX_CODE":"FINEST","VALIDATION":"INFO","WORKFLOW":"INFO","APEX_PROFILING":"INFO","DB":"INFO","CALLOUT":"INFO","VISUALFORCE":"INFO","SYSTEM":"DEBUG"}),
-        // workspace       : JSON.stringify([]),
-        openObjects     : JSON.stringify([])
+        fewmetLocations : JSON.stringify([]),
+        openClasses     : '',
+        traceLevels     : JSON.stringify({"APEX_CODE":"FINEST","VALIDATION":"INFO","WORKFLOW":"INFO","APEX_PROFILING":"INFO","DB":"INFO","CALLOUT":"INFO","VISUALFORCE":"INFO","SYSTEM":"DEBUG"}),
+        workspace       : JSON.stringify([])
     };
     unsafeWindow.Ext.Ajax.request({
         interval : 2E4,
@@ -475,43 +469,14 @@ ApexCSIAPI.prototype.open = function (entity, callback) {
     var params = {
         action    : 'OPEN',
         entity    : entity,
-        // workspace : JSON.stringify(workspace)
+        workspace : JSON.stringify(workspace)
     };
     unsafeWindow.Ext.Ajax.request({
         url     : this.url,
         params  : params,
-        headers : {
-            Accept: 'application/json'
-        },
         success : ApexCSIAPI.createGeneralSuccessListener(callback),
         failure : ApexCSIAPI.generalFailureListener
     });
-};
-ApexCSIAPI.prototype.getTrace = function (traceId, callback) {
-    var params = {
-        extent : 'steps',
-        log    : traceId
-    };
-    unsafeWindow.Ext.Ajax.request({
-        timeout : 60000,
-        url     : '/servlet/debug/apex/ApexCSIJsonServlet',
-        headers : {
-            Accept: 'application/json',
-            Authorization: 'OAuth ' + unsafeWindow.ApiUtils.getSessionId(),
-            'Content-Type': 'application/json',
-            Pragma: 'no-cache',
-            'Accept-Encoding': 'gzip,deflate,sdch',
-            'Origin': 'https://na7.salesforce.com'
-        },
-        params  : params,
-        success : createJsonSuccessListener(callback),
-        failure : ApexCSIAPI.generalFailureListener
-    });
-    function createJsonSuccessListener(callback) {
-        return function (result) {
-            callback(JSON.parse(result.responseText));
-        }
-    }
 };
 
 var css = '' +
@@ -804,7 +769,6 @@ Tooling.send = function (method, url, params, callback) {
     req.setRequestHeader('Authorization', 'OAuth ' + unsafeWindow.ApiUtils.getSessionId());
     req.setRequestHeader('Content-Type', 'application/json');
     req.setRequestHeader('Referer', 'https://na7.salesforce.com/_ui/common/apex/debug/ApexCSIPage');
-    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     req.send(params);
 };
 Tooling.urlParameters = function (hash) {
@@ -830,7 +794,7 @@ Tooling.executeAnonymous = function (anonymousBody, callback) {
     }, callback);
 };
 Tooling.query = function (q, callback, _dc) {
-    this.get('query/', {q: q, _dc: _dc}, callback);
+    this.get('query/', {q: q}, callback);
 };
 
 // Tooling外のAPI。ほかに置き場所がない&リクエスト内容がToolingに類似するためここに置く。
@@ -849,9 +813,6 @@ var window = window || unsafeWindow;
 var apexConsole = new ApexConsole();
 unsafeWindow.apexConsole = apexConsole;
 unsafeWindow.ApexConsole = ApexConsole;
-unsafeWindow.Tooling = Tooling;
-unsafeWindow.ApexCSIAPI = ApexCSIAPI;
-unsafeWindow.csi = new ApexCSIAPI();
 var buffers = new BufferList(apexConsole);
 apexConsole.viewElements.push(buffers.element);
 apexConsole.buffers = buffers;

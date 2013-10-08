@@ -22,11 +22,10 @@ ApexCSIAPI.prototype.poll = function (callback) {
     var params = {
         action          : 'POLL',
         alreadyFetched  : '',
-        // fewmetLocations : JSON.stringify([]),
-        // openClasses     : '',
-        // traceLevels     : JSON.stringify({"APEX_CODE":"FINEST","VALIDATION":"INFO","WORKFLOW":"INFO","APEX_PROFILING":"INFO","DB":"INFO","CALLOUT":"INFO","VISUALFORCE":"INFO","SYSTEM":"DEBUG"}),
-        // workspace       : JSON.stringify([]),
-        openObjects     : JSON.stringify([])
+        fewmetLocations : JSON.stringify([]),
+        openClasses     : '',
+        traceLevels     : JSON.stringify({"APEX_CODE":"FINEST","VALIDATION":"INFO","WORKFLOW":"INFO","APEX_PROFILING":"INFO","DB":"INFO","CALLOUT":"INFO","VISUALFORCE":"INFO","SYSTEM":"DEBUG"}),
+        workspace       : JSON.stringify([])
     };
     unsafeWindow.Ext.Ajax.request({
         interval : 2E4,
@@ -70,41 +69,12 @@ ApexCSIAPI.prototype.open = function (entity, callback) {
     var params = {
         action    : 'OPEN',
         entity    : entity,
-        // workspace : JSON.stringify(workspace)
+        workspace : JSON.stringify(workspace)
     };
     unsafeWindow.Ext.Ajax.request({
         url     : this.url,
         params  : params,
-        headers : {
-            Accept: 'application/json'
-        },
         success : ApexCSIAPI.createGeneralSuccessListener(callback),
         failure : ApexCSIAPI.generalFailureListener
     });
-};
-ApexCSIAPI.prototype.getTrace = function (traceId, callback) {
-    var params = {
-        extent : 'steps',
-        log    : traceId
-    };
-    unsafeWindow.Ext.Ajax.request({
-        timeout : 60000,
-        url     : '/servlet/debug/apex/ApexCSIJsonServlet',
-        headers : {
-            Accept: 'application/json',
-            Authorization: 'OAuth ' + unsafeWindow.ApiUtils.getSessionId(),
-            'Content-Type': 'application/json',
-            Pragma: 'no-cache',
-            'Accept-Encoding': 'gzip,deflate,sdch',
-            'Origin': 'https://na7.salesforce.com'
-        },
-        params  : params,
-        success : createJsonSuccessListener(callback),
-        failure : ApexCSIAPI.generalFailureListener
-    });
-    function createJsonSuccessListener(callback) {
-        return function (result) {
-            callback(JSON.parse(result.responseText));
-        }
-    }
 };

@@ -12,7 +12,6 @@ Tooling.send = function (method, url, params, callback) {
     req.setRequestHeader('Authorization', 'OAuth ' + unsafeWindow.ApiUtils.getSessionId());
     req.setRequestHeader('Content-Type', 'application/json');
     req.setRequestHeader('Referer', 'https://na7.salesforce.com/_ui/common/apex/debug/ApexCSIPage');
-    req.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     req.send(params);
 };
 Tooling.urlParameters = function (hash) {
@@ -38,7 +37,7 @@ Tooling.executeAnonymous = function (anonymousBody, callback) {
     }, callback);
 };
 Tooling.query = function (q, callback, _dc) {
-    this.get('query/', {q: q, _dc: _dc}, callback);
+    this.get('query/', {q: q}, callback);
 };
 
 // Tooling外のAPI。ほかに置き場所がない&リクエスト内容がToolingに類似するためここに置く。
