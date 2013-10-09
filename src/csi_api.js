@@ -18,20 +18,6 @@ ApexCSIAPI.prototype.config = function (callback) {
         failure : ApexCSIAPI.generalFailureListener
     });
 };
-ApexCSIAPI.prototype.poll = function (callback) {
-    var params = {
-        action          : 'POLL',
-        alreadyFetched  : '',
-        openObjects     : JSON.stringify([])
-    };
-    unsafeWindow.Ext.Ajax.request({
-        interval : 2E4,
-        url      : this.url,
-        params   : params,
-        success  : ApexCSIAPI.createGeneralSuccessListener(callback),
-        failure : ApexCSIAPI.generalFailureListener
-    });
-};
 ApexCSIAPI.prototype.getAlreadyFetched = function () {
     return (this.traces || []).map(function (trace) {
         return trace.id;
