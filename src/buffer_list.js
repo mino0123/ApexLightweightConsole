@@ -50,7 +50,7 @@ BufferList.prototype.newBuffer = function (params) {
     }
 };
 BufferList.prototype.load = function () {
-    var code = GM_getValue('code'),
+    var code = localStorage.getItem('alc_Code'),
         data,
         buffers = this.buffers;
 
@@ -68,7 +68,7 @@ BufferList.prototype.load = function () {
 };
 BufferList.prototype.save = function () {
     this.flushCode();
-    GM_setValue('code', JSON.stringify(this.buffers));
+    localStorage.setItem('alc_Code', JSON.stringify(this.buffers));
 };
 BufferList.prototype.render = function () {
     var element = this.element,

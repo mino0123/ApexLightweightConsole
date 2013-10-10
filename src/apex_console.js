@@ -132,7 +132,6 @@ ApexConsole.prototype.executeCode = function apex_console_executecode() {
         that.loading.hide();
     }
 };
-ApexConsole.defaultTab = GM_getValue('selected-tab');// unsafeWindowからはGM_getValueを使用できないためここで読み込んでおく
 ApexConsole.prototype.renderResult = function (logs) {
     var logView = this.logView;
     if (! logView) {
@@ -140,6 +139,7 @@ ApexConsole.prototype.renderResult = function (logs) {
         logView.logs = logs;
 
         var selectedTab = ApexConsole.defaultTab
+        var selectedTab = localStorage.getItem('alc_SelectedTab');
         var defaultSelectedTab = getTabByText(selectedTab) || getFirstTab();
         dispatchClick(defaultSelectedTab);
 
