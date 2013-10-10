@@ -138,7 +138,6 @@ ApexConsole.prototype.executeCode = function apex_console_executecode() {
         that.loading.hide();
     }
 };
-ApexConsole.defaultTab = GM_getValue('selected-tab');// unsafeWindowからはGM_getValueを使用できないためここで読み込んでおく
 ApexConsole.prototype.renderResult = function (logs) {
     var logView = this.logView;
     if (! logView) {
@@ -146,6 +145,7 @@ ApexConsole.prototype.renderResult = function (logs) {
         logView.logs = logs;
 
         var selectedTab = ApexConsole.defaultTab
+        var selectedTab = localStorage.getItem('alc_SelectedTab');
         var defaultSelectedTab = getTabByText(selectedTab) || getFirstTab();
         dispatchClick(defaultSelectedTab);
 
@@ -226,7 +226,7 @@ BufferList.prototype.newBuffer = function (params) {
     }
 };
 BufferList.prototype.load = function () {
-    var code = GM_getValue('code'),
+    var code = localStorage.getItem('alc_Code'),
         data,
         buffers = this.buffers;
 
@@ -244,7 +244,7 @@ BufferList.prototype.load = function () {
 };
 BufferList.prototype.save = function () {
     this.flushCode();
-    GM_setValue('code', JSON.stringify(this.buffers));
+    localStorage.setItem('alc_Code', JSON.stringify(this.buffers));
 };
 BufferList.prototype.render = function () {
     var element = this.element,
@@ -573,7 +573,18 @@ var css = '' +
 '    .apex-console-buffers .remove {' +
 '        float           : right;' +
 '    }';
-GM_addStyle(css);
+
+if (typeof GM_addStyle === 'function') {
+    GM_addStyle(css);
+} else {
+    (function () {
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.textContent = css;
+        document.head.appendChild(style);
+    }());
+}
+
 function loadScript(src) {
   var script = document.createElement('script');
   script.src = src;
@@ -622,7 +633,7 @@ function ApexLogView() {
         var a = document.createElement('a');
         a.textContent = label;
         a.addEventListener('click', function () {
-            GM_setValue('selected-tab', label);
+            localStorage.setItem('alc_SelectedTab', label);
             tabElements.forEach(removeSelected);
             li.classList.add('selected');
             that.applyFilter(filter);
@@ -636,7 +647,7 @@ function ApexLogView() {
         var a = document.createElement('a');
         a.textContent = label;
         a.addEventListener('click', function () {
-            GM_setValue('selected-tab', label);
+            localStorage.setItem('alc_SelectedTab', label);
             tabElements.forEach(removeSelected);
             li.classList.add('selected');
 

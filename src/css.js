@@ -111,4 +111,14 @@ var css = '' +
 '    .apex-console-buffers .remove {' +
 '        float           : right;' +
 '    }';
-GM_addStyle(css);
+
+if (typeof GM_addStyle === 'function') {
+    GM_addStyle(css);
+} else {
+    (function () {
+        var style = document.createElement('style');
+        style.type = 'text/css';
+        style.textContent = css;
+        document.head.appendChild(style);
+    }());
+}
