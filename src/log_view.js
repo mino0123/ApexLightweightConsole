@@ -24,7 +24,7 @@ function ApexLogView() {
         var a = document.createElement('a');
         a.textContent = label;
         a.addEventListener('click', function () {
-            GM_setValue('selected-tab', label);
+            localStorage.setItem('alc_SelectedTab', label);
             tabElements.forEach(removeSelected);
             li.classList.add('selected');
             that.applyFilter(filter);
@@ -38,7 +38,7 @@ function ApexLogView() {
         var a = document.createElement('a');
         a.textContent = label;
         a.addEventListener('click', function () {
-            GM_setValue('selected-tab', label);
+            localStorage.setItem('alc_SelectedTab', label);
             tabElements.forEach(removeSelected);
             li.classList.add('selected');
 
