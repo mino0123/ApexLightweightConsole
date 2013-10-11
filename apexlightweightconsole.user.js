@@ -227,13 +227,11 @@ BufferList.prototype.newBuffer = function (params) {
 };
 BufferList.prototype.load = function () {
     var code = localStorage.getItem('alc_Code'),
-        data,
+        data = JSON.parse(code),
         buffers = this.buffers;
 
-    try {
-        data = JSON.parse(code);
-    } catch(e){
-        data = {untitled:{name:'untitled', code:code || ''}};
+    if (data == null) {
+        data = {untitled:{name:this.generateNewName(), code:code || ''}};
     }
 
     for (var i in data) {
