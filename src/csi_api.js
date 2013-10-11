@@ -54,7 +54,8 @@ ApexCSIAPI.prototype.open = function (entity, callback) {
         entity    : entity,
         workspace : JSON.stringify(workspace)
     };
-    unsafeWindow.Ext.Ajax.request({
+    var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+    win.Ext.Ajax.request({
         url     : this.url,
         params  : params,
         success : ApexCSIAPI.createGeneralSuccessListener(callback),
