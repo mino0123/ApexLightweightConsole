@@ -450,7 +450,8 @@ ApexCSIAPI.prototype.open = function (entity, callback) {
         entity    : entity,
         workspace : JSON.stringify(workspace)
     };
-    unsafeWindow.Ext.Ajax.request({
+    var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+    win.Ext.Ajax.request({
         url     : this.url,
         params  : params,
         success : ApexCSIAPI.createGeneralSuccessListener(callback),
@@ -755,8 +756,9 @@ Tooling.send = function (method, url, params, callback) {
         var res = req.responseText;
         callback(JSON.parse(res), event);
     };
+    var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
     req.setRequestHeader('Accept', 'application/json');
-    req.setRequestHeader('Authorization', 'OAuth ' + unsafeWindow.ApiUtils.getSessionId());
+    req.setRequestHeader('Authorization', 'OAuth ' + win.ApiUtils.getSessionId());
     req.setRequestHeader('Content-Type', 'application/json');
     req.setRequestHeader('Referer', 'https://na7.salesforce.com/_ui/common/apex/debug/ApexCSIPage');
     req.send(params);
