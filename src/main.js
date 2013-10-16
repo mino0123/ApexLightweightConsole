@@ -3,7 +3,6 @@ var apexConsole = new ApexConsole();
 unsafeWindow.apexConsole = apexConsole;
 unsafeWindow.ApexConsole = ApexConsole;
 var buffers = new BufferList(apexConsole);
-apexConsole.viewElements.push(buffers.element);
 apexConsole.buffers = buffers;
 
 window.addEventListener('keydown', function windowKeyDownListener(event) {
@@ -15,7 +14,6 @@ window.addEventListener('keydown', function windowKeyDownListener(event) {
         console.log(e);
     }
 }, false);
-
 
 function addNavLink(text, onclick) {
     var parent;

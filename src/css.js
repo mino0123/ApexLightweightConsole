@@ -2,14 +2,16 @@ var css = '' +
 '    .apex-console {' +
 '        position         : absolute;' +
 '        top              : 30px;' +
-'        left             : 200px;' +
+'        left             : 5%;' +
 '        z-index          : 2001;' +
+'        width            : 98%;' +
+'        min-width        : 500px;' +
+'        max-width        : 1000px;' +
 '        background-color : white;' +
 '    }' +
 '    .apex-console-code {' +
 '        height      : 300px;' +
-'        width       : 800px;' +
-'        display     : block;' +
+'        width       : 89%;' +
 '        resize      : both;' +
 '        font-family : inconsolata;' +
 '    }' +
@@ -24,7 +26,8 @@ var css = '' +
 '        z-index          : 2000;' +
 '    }' +
 '    .apex-console-execute {' +
-'        margin-left      : 20px !important;' +
+'        margin-left      : 0 !important;' +
+'        width            : 10%;' +
 '    }' +
 '    .apex-console-result {' +
 '        width            : 100%;' +
@@ -70,19 +73,22 @@ var css = '' +
 '    }' +
     '' +
 '    .apex-console-buffers {' +
-'        position         : absolute;' +
-'        top              : 40px;' +
-'        left             : 1000px;' +
-'        z-index          : 2001;' +
 '        display          : inline-block;' +
+'        margin           : 0;' +
+'        padding          : 0;' +
+'        vertical-align   : top;' +
+'        width            : 10%;' +
 '        font-family      : inconsolata;' +
 '        font-weight      : bold;' +
 '    }' +
 '    .apex-console-buffers li {' +
 '        list-style-type  : none;' +
 '        height           : 30px;' +
-'        width            : 200px;' +
+'        margin           : 0;' +
 '        vertical-align   : middle;' +
+'        min-width        : -moz-max-content;' +
+'        min-width        : -webkit-max-content;' +
+'        min-width        : max-content;' +
 '        border-radius    : 0 10px 10px 0;' +
 '        background-color : #EEC;' +
 '        box-shadow       : 2px 2px 3px #CCC;' +
