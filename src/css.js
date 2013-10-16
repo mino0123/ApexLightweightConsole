@@ -4,7 +4,7 @@ var css = '' +
 '        top              : 30px;' +
 '        left             : 5%;' +
 '        z-index          : 2001;' +
-'        width            : 98%;' +
+'        width            : 88%;' +
 '        min-width        : 500px;' +
 '        max-width        : 1000px;' +
 '        background-color : white;' +
