@@ -9,6 +9,9 @@ function BufferList(apexConsole) {
     var that = this;
     apexConsole.events.push({
         oninit: function oninit() {
+            setTimeout(function () {
+                apexConsole.elements.content.insertBefore(element, apexConsole.elements.execute);
+            }, 0);
             var bs = that.buffers;
             for (var i in bs) {
                 that.select(bs[i].name);
