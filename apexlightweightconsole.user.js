@@ -93,7 +93,7 @@ ApexConsole.prototype.setCode = function apex_console_set_code(value) {
     var code = this.elements.code;
     code.value = value;
     code.style.height = Math.max(code.scrollHeight, 300) + 'px';
-}
+};
 ApexConsole.prototype.hide = function apex_console_hide() {
     this.fire('onhide');
     this.viewElements.forEach(this.removeFromBody);
@@ -144,12 +144,11 @@ ApexConsole.prototype.renderResult = function (logs) {
         logView = this.logView = new ApexLogView();
         logView.logs = logs;
 
-        var selectedTab = ApexConsole.defaultTab
         var selectedTab = localStorage.getItem('alc_SelectedTab');
         var defaultSelectedTab = getTabByText(selectedTab) || getFirstTab();
         dispatchClick(defaultSelectedTab);
 
-        this.elements['result'] = logView.element;
+        this.elements.result = logView.element;
         this.elements.content.appendChild(logView.element);
     } else {
         logView.logs = logs;
@@ -233,7 +232,7 @@ BufferList.prototype.load = function () {
         data = JSON.parse(code),
         buffers = this.buffers;
 
-    if (data == null) {
+    if (data) {
         data = {untitled:{name:this.generateNewName(), code:code || ''}};
     }
 
@@ -274,7 +273,7 @@ BufferList.prototype.generateNewName = function () {
     var count = 0;
     while (this.NEW_BUFFER_NAME + (++count) in buffers) {}
     return this.NEW_BUFFER_NAME + count;
-}
+};
 BufferList.prototype.newListItem = function (text, onclick) {
     var element = document.createElement('li');
     var a = document.createElement('a');
@@ -283,7 +282,7 @@ BufferList.prototype.newListItem = function (text, onclick) {
     element.appendChild(a);
     element.addEventListener('click', onclick, false);
     return element;
-}
+};
 BufferList.prototype.createClickListener = function (buf) {
     var that = this;
     return function () {
@@ -324,7 +323,7 @@ BufferList.prototype.flushCode = function () {
     if (this.selectedName && this.buffers[this.selectedName]) {
         this.buffers[this.selectedName].code = this.console.elements.code.value;
     }
-}
+};
 function Tab(list, name, code) {
     this.list = list;
     this.name = name || code;
@@ -404,7 +403,7 @@ ApexCSIAPI.createGeneralSuccessListener = function (callback) {
     return function (result) {
         var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
         callback(win.Util.evalAjaxServletOutput(result.responseText));
-    }
+    };
 };
 ApexCSIAPI.generalFailureListener = function () {
     console.log(arguments);
@@ -681,7 +680,7 @@ new EventPair('SYSTEM_METHOD_ENTRY', 'SYSTEM_METHOD_EXIT');
 
 var LogEvent = {
     isEndEvent : function (event) {
-        return
+        return;
     }
 };
 function LogThreeView(logs) {
@@ -713,12 +712,13 @@ ApexLogView.prototype.render = function() {
     table.innerHTML = '';
 
     var headerRow = table.insertRow(0);
-    for (var i = 0, len = params.length; i < len; i++) {
-        var cell = document.createElement('th');
+    var i, cell;
+    for (i = 0, len = params.length; i < len; i++) {
+        cell = document.createElement('th');
         cell.textContent = params[i];
         headerRow.appendChild(cell);
     }
-    for (var i = 0, len = logs.length; i < len; i++) {
+    for (i = 0, len = logs.length; i < len; i++) {
         var log = logs[i];
         if (! this.filter(log)) {
             continue;
@@ -726,7 +726,7 @@ ApexLogView.prototype.render = function() {
         var row = table.insertRow(table.rows.length);
         var cells = row.cells;
         for (var j = 0, paramLen = params.length; j < paramLen; j++) {
-            var cell = row.insertCell(cells.length);
+            cell = row.insertCell(cells.length);
             cell.innerHTML = log[params[j]];
         }
     }

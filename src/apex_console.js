@@ -87,7 +87,7 @@ ApexConsole.prototype.setCode = function apex_console_set_code(value) {
     var code = this.elements.code;
     code.value = value;
     code.style.height = Math.max(code.scrollHeight, 300) + 'px';
-}
+};
 ApexConsole.prototype.hide = function apex_console_hide() {
     this.fire('onhide');
     this.viewElements.forEach(this.removeFromBody);
@@ -138,12 +138,11 @@ ApexConsole.prototype.renderResult = function (logs) {
         logView = this.logView = new ApexLogView();
         logView.logs = logs;
 
-        var selectedTab = ApexConsole.defaultTab
         var selectedTab = localStorage.getItem('alc_SelectedTab');
         var defaultSelectedTab = getTabByText(selectedTab) || getFirstTab();
         dispatchClick(defaultSelectedTab);
 
-        this.elements['result'] = logView.element;
+        this.elements.result = logView.element;
         this.elements.content.appendChild(logView.element);
     } else {
         logView.logs = logs;
