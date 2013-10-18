@@ -63,7 +63,7 @@ new EventPair('SYSTEM_METHOD_ENTRY', 'SYSTEM_METHOD_EXIT');
 
 var LogEvent = {
     isEndEvent : function (event) {
-        return
+        return;
     }
 };
 function LogThreeView(logs) {
@@ -95,12 +95,13 @@ ApexLogView.prototype.render = function() {
     table.innerHTML = '';
 
     var headerRow = table.insertRow(0);
-    for (var i = 0, len = params.length; i < len; i++) {
-        var cell = document.createElement('th');
+    var i, cell;
+    for (i = 0, len = params.length; i < len; i++) {
+        cell = document.createElement('th');
         cell.textContent = params[i];
         headerRow.appendChild(cell);
     }
-    for (var i = 0, len = logs.length; i < len; i++) {
+    for (i = 0, len = logs.length; i < len; i++) {
         var log = logs[i];
         if (! this.filter(log)) {
             continue;
@@ -108,7 +109,7 @@ ApexLogView.prototype.render = function() {
         var row = table.insertRow(table.rows.length);
         var cells = row.cells;
         for (var j = 0, paramLen = params.length; j < paramLen; j++) {
-            var cell = row.insertCell(cells.length);
+            cell = row.insertCell(cells.length);
             cell.innerHTML = log[params[j]];
         }
     }

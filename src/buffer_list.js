@@ -57,7 +57,7 @@ BufferList.prototype.load = function () {
         data = JSON.parse(code),
         buffers = this.buffers;
 
-    if (data == null) {
+    if (data) {
         data = {untitled:{name:this.generateNewName(), code:code || ''}};
     }
 
@@ -98,7 +98,7 @@ BufferList.prototype.generateNewName = function () {
     var count = 0;
     while (this.NEW_BUFFER_NAME + (++count) in buffers) {}
     return this.NEW_BUFFER_NAME + count;
-}
+};
 BufferList.prototype.newListItem = function (text, onclick) {
     var element = document.createElement('li');
     var a = document.createElement('a');
@@ -107,7 +107,7 @@ BufferList.prototype.newListItem = function (text, onclick) {
     element.appendChild(a);
     element.addEventListener('click', onclick, false);
     return element;
-}
+};
 BufferList.prototype.createClickListener = function (buf) {
     var that = this;
     return function () {
@@ -148,7 +148,7 @@ BufferList.prototype.flushCode = function () {
     if (this.selectedName && this.buffers[this.selectedName]) {
         this.buffers[this.selectedName].code = this.console.elements.code.value;
     }
-}
+};
 function Tab(list, name, code) {
     this.list = list;
     this.name = name || code;

@@ -5,7 +5,7 @@ ApexCSIAPI.createGeneralSuccessListener = function (callback) {
     return function (result) {
         var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
         callback(win.Util.evalAjaxServletOutput(result.responseText));
-    }
+    };
 };
 ApexCSIAPI.generalFailureListener = function () {
     console.log(arguments);
