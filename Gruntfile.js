@@ -1,5 +1,14 @@
 module.exports = function (grunt) {
 
+  grunt.config('jshint', {
+    options: {
+      expr: true,
+      scripturl: true
+    },
+    src: ['src/**/*.js'],
+    concated: ['ApexLightweightConsole.user.js']
+  });
+
   grunt.config('concat.script', {
     options: {banner: grunt.file.read('bannar.txt')},
     src: [
@@ -21,8 +30,9 @@ module.exports = function (grunt) {
     tasks: ['default']
   });
 
-  grunt.registerTask('default', ['concat']);
+  grunt.registerTask('default', ['concat', 'jshint']);
 
+  grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
