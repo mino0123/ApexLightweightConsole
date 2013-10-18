@@ -232,8 +232,10 @@ BufferList.prototype.load = function () {
         data = JSON.parse(code),
         buffers = this.buffers;
 
-    if (data) {
-        data = {untitled:{name:this.generateNewName(), code:code || ''}};
+    if (!data) {
+        var name = this.generateNewName();
+        data = {};
+        data[name] = {name:name, code:code || ''};
     }
 
     for (var i in data) {
