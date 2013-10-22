@@ -58,7 +58,8 @@ ApexConsole.prototype.initialize = function apex_console_initialize() {
         }
     });
 
-    if (! unsafeWindow.Ext) {
+    var win = typeof unsafeWindow === 'undefined' ? window : unsafeWindow;
+    if (! win.Ext) {
         loadScript('/EXT/ext-3.0.0/ext-core.js');
     }
 
