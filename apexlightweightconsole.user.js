@@ -127,7 +127,11 @@ ApexConsole.prototype.executeCode = function apex_console_executecode() {
                 csi.open(executeId, onOpenEnd);
             });
         } else {
-            alert(result.errorText);
+            if (result.compiled) {
+                alert(result.exceptionMessage);
+            } else {
+                alert(result.compileProblem);
+            }
             that.loading.hide();
         }
     }
