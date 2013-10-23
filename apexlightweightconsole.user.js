@@ -727,6 +727,15 @@ ApexLogView.prototype.applyFilter = function(filter) {
 
 var Tooling = {};
 Tooling.baseUrl = '/services/data/v29.0/tooling/';
+Tooling.getSessionIdInCookie = function () {
+    var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
+    var cookies = document.cookie.split('; ').reduce(function (o, c) {
+        var namevalue = c.split('=');
+        o[namevalue[0]] = namevalue[1];
+        return o;
+    }, {});
+    return cookies.sid;
+};
 Tooling.send = function (method, url, params, callback) {
     var req = new XMLHttpRequest();
     req.open(method, this.baseUrl + url);
@@ -735,9 +744,8 @@ Tooling.send = function (method, url, params, callback) {
         var res = req.responseText;
         callback(JSON.parse(res), event);
     };
-    var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
     req.setRequestHeader('Accept', 'application/json');
-    req.setRequestHeader('Authorization', 'OAuth ' + win.ApiUtils.getSessionId());
+    req.setRequestHeader('Authorization', 'OAuth ' + this.getSessionIdInCookie());
     req.setRequestHeader('Content-Type', 'application/json');
     req.send(params);
 };
