@@ -12,7 +12,6 @@ Tooling.send = function (method, url, params, callback) {
     req.setRequestHeader('Accept', 'application/json');
     req.setRequestHeader('Authorization', 'OAuth ' + win.ApiUtils.getSessionId());
     req.setRequestHeader('Content-Type', 'application/json');
-    req.setRequestHeader('Referer', 'https://na7.salesforce.com/_ui/common/apex/debug/ApexCSIPage');
     req.send(params);
 };
 Tooling.urlParameters = function (hash) {
