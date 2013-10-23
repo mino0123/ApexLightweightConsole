@@ -58,11 +58,6 @@ ApexConsole.prototype.initialize = function apex_console_initialize() {
         }
     });
 
-    var win = typeof unsafeWindow === 'undefined' ? window : unsafeWindow;
-    if (! win.Ext) {
-        loadScript('/EXT/ext-3.0.0/ext-core.js');
-    }
-
     this.viewElements.push(content);
     this.viewElements.push(bg);
 
@@ -572,11 +567,6 @@ if (typeof GM_addStyle === 'function') {
     }());
 }
 
-function loadScript(src) {
-  var script = document.createElement('script');
-  script.src = src;
-  document.head.appendChild(script);
-}
 function LoadingImage() {
   var element = this.element  = document.createElement('img');
   element.src                 = '/img/loading.gif';

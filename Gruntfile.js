@@ -17,7 +17,6 @@ module.exports = function (grunt) {
       'src/buffer_list.js',
       'src/csi_api.js',
       'src/css.js',
-      'src/load_script.js',
       'src/loading_image.js',
       'src/log_view.js',
       'src/tooling.js',
