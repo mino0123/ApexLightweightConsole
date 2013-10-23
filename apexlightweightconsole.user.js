@@ -728,7 +728,6 @@ ApexLogView.prototype.applyFilter = function(filter) {
 var Tooling = {};
 Tooling.baseUrl = '/services/data/v29.0/tooling/';
 Tooling.getSessionIdInCookie = function () {
-    var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
     var cookies = document.cookie.split('; ').reduce(function (o, c) {
         var namevalue = c.split('=');
         o[namevalue[0]] = namevalue[1];
