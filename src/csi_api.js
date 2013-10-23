@@ -1,14 +1,13 @@
 function ApexCSIAPI() {
     this.url = '/_ui/common/apex/debug/ApexCSIAPI';
 }
-ApexCSIAPI.createGeneralSuccessListener = function (callback) {
-    return function (result) {
-        var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
-        callback(win.Util.evalAjaxServletOutput(result.responseText));
-    };
-};
 ApexCSIAPI.generalFailureListener = function () {
     console.log(arguments);
+};
+ApexCSIAPI.prototype.objectToParamStr = function (obj) {
+    return Object.keys(obj).reduce(function (str, key) {
+        return str + (str === '' ? '' : '&') + encodeURIComponent(key) + '=' + encodeURIComponent(obj[key]);
+    }, '');
 };
 ApexCSIAPI.prototype.open = function (entity, callback) {
     var workspace = [];
@@ -22,11 +21,17 @@ ApexCSIAPI.prototype.open = function (entity, callback) {
         entity    : entity,
         workspace : JSON.stringify(workspace)
     };
-    var win = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
-    win.Ext.Ajax.request({
-        url     : this.url,
-        params  : params,
-        success : ApexCSIAPI.createGeneralSuccessListener(callback),
-        failure : ApexCSIAPI.generalFailureListener
-    });
+    var req = new XMLHttpRequest();
+    req.open('POST', this.url, true);
+    req.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    req.onload = function (event) {
+        var req = event.target;
+        if (req.status === 200) {
+            var response = req.responseText.replace(/^.*?\n/, '');// remove 'while(1);'
+            callback(eval('(' + response + ')'));
+        } else {
+            ApexCSIAPI.generalFailureListener(req);
+        }
+    };
+    req.send(this.objectToParamStr(params));
 };
