@@ -3,7 +3,8 @@ module.exports = function (grunt) {
   grunt.config('jshint', {
     options: {
       expr: true,
-      scripturl: true
+      scripturl: true,
+      evil: true
     },
     src: ['src/**/*.js'],
     concated: ['ApexLightweightConsole.user.js']
