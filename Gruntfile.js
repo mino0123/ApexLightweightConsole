@@ -34,8 +34,13 @@ module.exports = function (grunt) {
     cmd: 'casperjs --engine=slimerjs screenshot.js'
   });
 
+  grunt.config('exec.test', {
+    cmd: 'casperjs --engine=slimerjs --direct --log-level=warning test test/browser-test.js'
+  });
+
   grunt.registerTask('default', ['concat', 'jshint']);
   grunt.registerTask('screenshot', ['default', 'exec:screenshot']);
+  grunt.registerTask('test', ['default', 'exec:test']);
 
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-concat');
