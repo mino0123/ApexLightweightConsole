@@ -1,6 +1,10 @@
 .*
 !.git*
+!.travis.yml
+
 node_modules
 
 credential.json
+!test/credential.json
+
 screenshots
