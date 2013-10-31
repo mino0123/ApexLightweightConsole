@@ -1,12 +1,12 @@
 var fs = require('fs');
-const credentialpath = './credential.json';
+const credentialpath = 'credential.json';
 
 module.exports = function (casper) {
-    if (! fs.exists(credentialpath)) {
+    if (! fs.exists('./test/' + credentialpath)) {
         throw new Error('Please write account information to credential.json');
     }
 
-    var credential = require('../.' + credentialpath);
+    var credential = require('../' + credentialpath);
 
     casper.then(function open_login_page() {
         this.log('open login page...', 'debug');

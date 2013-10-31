@@ -9,6 +9,13 @@ require('./lib/sfdclogin')(casper);
 
 casper.then(function test() {
 
+    function error(test) {
+        return function () {
+            test.done(1);
+            casper.exit(1);
+        };
+    }
+
     this.test.begin('console open', 1, function (test) {
         casper.then(function open_console() {
             this.evaluate(function () {
@@ -37,7 +44,7 @@ casper.then(function test() {
             return this.evaluate(function () {
                 return document.getElementsByClassName('apex-console-result').length > 0;
             });
-        });
+        }, null, error(test));
         casper.then(function () {
             test.assert(this.evaluate(function result_view_is_showed() {
                 return document.querySelectorAll('.apex-console-result tr').length > 0;

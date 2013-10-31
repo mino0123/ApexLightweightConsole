@@ -35,7 +35,7 @@ module.exports = function (grunt) {
   });
 
   grunt.config('exec.test', {
-    cmd: 'casperjs --engine=slimerjs --direct --log-level=warning test test/browser-test.js'
+    cmd: 'casperjs --direct --log-level=warning test test/browser-test.js'
   });
 
   grunt.registerTask('default', ['concat', 'jshint']);
