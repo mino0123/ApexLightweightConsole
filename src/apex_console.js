@@ -38,7 +38,7 @@ ApexConsole.prototype.initialize = function apex_console_initialize() {
         that.hide();
     }, false);
     code.addEventListener('keydown', function (event) {
-        if (event.ctrlKey && event.keyCode === event.DOM_VK_RETURN) {
+        if (event.ctrlKey && event.keyCode === (KeyboardEvent.DOM_VK_RETURN || 13)) {
             that.executeCode();
         }
     }, false);
