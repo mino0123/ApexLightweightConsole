@@ -60,9 +60,17 @@ casper.then(function test() {
                 return document.querySelectorAll('.apex-console-result tr').length === 2;
             }));
             test.done();
-            casper.exit();
+            screenshot(this);
         });
     });
+
+    function screenshot(casper) {
+        casper.then(function () {
+            clickResultTab(casper, 'ALL');
+            this.capture('screenshots/1.png');
+            casper.exit();
+        });
+    }
 
 });
 
